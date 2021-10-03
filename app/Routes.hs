@@ -2,16 +2,18 @@ module Routes where
 
 import Data.Text (Text)
 import Servant
+import Trans
 import Types
 
-root :: Handler Text
+root :: HandlerT Status
 root = do
-  pure "BatBin Backend Server"
+  error "topkek"
+  pure $ Status True "BatBin Backend Server"
 
-fetch :: Text -> Handler Status
+fetch :: Text -> HandlerT Status
 fetch id = do
   pure $ Status True "some dummy content"
 
-create :: Text -> Handler Status
+create :: Text -> HandlerT Status
 create content = do
   pure $ Status True "operation done"

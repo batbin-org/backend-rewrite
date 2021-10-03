@@ -1,32 +1,45 @@
 module Trans where
 
+import Control.Monad.Fail (MonadFail)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Text (Text)
 import Servant (Handler)
+import Types (Status (Status))
 
-newtype HandlerT e a = HandlerT {runHandlerT :: Handler (Either e a)}
+newtype HandlerT a = HandlerT {runHandlerT :: Handler (Either Status a)}
 
-liftHT :: Either e a -> HandlerT e a
+routeWrapper :: HandlerT Status -> Handler Status
+routeWrapper (HandlerT val) =
+  val >>= \case
+    Left err -> pure err
+    Right v -> pure v
+
+liftHT :: Either Status a -> HandlerT a
 liftHT v = HandlerT $ pure v
 
-instance MonadIO (HandlerT e) where
+failHT :: Text -> HandlerT Status
+failHT err = HandlerT $ pure (Left $ Status False err)
+
+instance MonadIO HandlerT where
   liftIO = liftIO
 
-instance Functor (HandlerT e) where
-  fmap f (HandlerT val) = HandlerT $ do
-    val >>= \case
-      Left err -> pure (Left err)
-      Right v -> pure (Right (f v))
+instance Functor HandlerT where
+  fmap f (HandlerT val) =
+    HandlerT $
+      val >>= \case
+        Left err -> pure (Left err)
+        Right v -> pure (Right (f v))
 
-instance Applicative (HandlerT e) where
+instance Applicative HandlerT where
   pure x = HandlerT (pure (Right x))
   HandlerT fn <*> HandlerT v = HandlerT $ do
     fn <- fn
     v <- v
     pure $ fn <*> v
 
-instance Monad (HandlerT e) where
-  (HandlerT val) >>= fn = HandlerT $ do
-    val >>= \case
-      Left err -> pure (Left err)
-      Right v -> runHandlerT $ fn v
+instance Monad HandlerT where
+  (HandlerT val) >>= fn =
+    HandlerT $
+      val >>= \case
+        Left err -> pure (Left err)
+        Right v -> runHandlerT $ fn v

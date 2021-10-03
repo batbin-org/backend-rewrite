@@ -36,7 +36,7 @@ instance ToJSON Status
 
 type BatbinAPI =
   -- GET / -> Text
-  Get '[PlainText] Text
+  Get '[JSON] Status
     -- GET /paste/:id -> Paste Content (in PlainText)
     :<|> "paste" :> Capture "id" Text :> Get '[JSON] Status
     -- POST /paste/:pasteContent -> Status (in JSON)
