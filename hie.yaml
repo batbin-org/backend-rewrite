@@ -1,0 +1,13 @@
+cradle:
+  cabal:
+    - path: "app/Main.hs"
+      component: "backend-rewrite:exe:backend-rewrite"
+
+    - path: "app/Routes.hs"
+      component: "backend-rewrite:exe:backend-rewrite"
+
+    - path: "app/Types.hs"
+      component: "backend-rewrite:exe:backend-rewrite"
+
+    - path: "app/Trans.hs"
+      component: "backend-rewrite:exe:backend-rewrite"
