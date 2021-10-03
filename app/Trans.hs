@@ -1,10 +1,17 @@
 module Trans where
 
+import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Trans.Except (ExceptT)
 import Data.Text (Text)
 import Servant (Handler)
 
 newtype HandlerT a = HandlerT {runHandlerT :: Handler (Either Text a)}
+
+liftHT :: Either Text a -> HandlerT a
+liftHT v = HandlerT $ pure v
+
+instance MonadIO HandlerT where
+  liftIO = liftIO
 
 instance Functor HandlerT where
   fmap f (HandlerT val) = HandlerT $ do
