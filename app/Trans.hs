@@ -1,5 +1,6 @@
 module Trans where
 
+import Control.Exception (catch)
 import Control.Monad.Fail (MonadFail)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Text (Text)
@@ -7,12 +8,6 @@ import Servant (Handler)
 import Types (Status (Status))
 
 newtype HandlerT a = HandlerT {runHandlerT :: Handler (Either Status a)}
-
-routeWrapper :: HandlerT Status -> Handler Status
-routeWrapper (HandlerT val) =
-  val >>= \case
-    Left err -> pure err
-    Right v -> pure v
 
 liftHT :: Either Status a -> HandlerT a
 liftHT v = HandlerT $ pure v
