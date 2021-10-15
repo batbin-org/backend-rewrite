@@ -11,6 +11,7 @@ executable backend-rewrite
                         , Routes
                         , Types
                         , Trans
+                        , Utils
 
     build-depends:        base ^>=4.15.0.0
                         , servant-server

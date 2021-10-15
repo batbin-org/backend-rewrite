@@ -1,9 +1,8 @@
 module Trans where
 
-import Control.Exception (catch)
 import Control.Monad.Fail (MonadFail)
 import Control.Monad.IO.Class (MonadIO, liftIO)
-import Data.Text (Text)
+import Data.Text (Text, pack)
 import Servant (Handler)
 import Types (Status (Status))
 
@@ -17,6 +16,9 @@ failHT err = HandlerT $ pure (Left $ Status False err)
 
 instance MonadIO HandlerT where
   liftIO = liftIO
+
+instance MonadFail HandlerT where
+  fail msg = HandlerT (pure (Left (Status False (pack msg))))
 
 instance Functor HandlerT where
   fmap f (HandlerT val) =
