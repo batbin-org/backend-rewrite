@@ -1,6 +1,7 @@
 module Types where
 
-import Data.Aeson (FromJSON, ToJSON)
+import Data.Aeson (FromJSON, ToJSON, encode)
+import Data.ByteString.Lazy.Char8 (unpack)
 import Data.Text (Text)
 import GHC.Generics (Generic)
 import Servant
@@ -24,7 +25,10 @@ data Status = Status
   { success :: Bool,
     message :: Text
   }
-  deriving (Eq, Show, Read, Generic)
+  deriving (Eq, Read, Generic)
+
+instance Show Status where
+  show = unpack . encode
 
 instance FromJSON Paste
 

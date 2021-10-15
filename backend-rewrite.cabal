@@ -14,6 +14,8 @@ executable backend-rewrite
 
     build-depends:        base ^>=4.15.0.0
                         , servant-server
+                        , http-types
+                        , bytestring
                         , servant
                         , aeson
                         , text
