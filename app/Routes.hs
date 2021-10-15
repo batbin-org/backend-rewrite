@@ -6,6 +6,7 @@ import Types
 
 root :: HandlerT Status
 root = do
+  error "hehe"
   pure $ Status True "BatBin Backend Server"
 
 fetch :: Text -> HandlerT Status

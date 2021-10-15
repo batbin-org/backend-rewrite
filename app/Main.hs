@@ -1,12 +1,12 @@
 module Main where
 
 import Control.Exception (SomeException)
-import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (encode)
 import Data.Proxy
 import Data.Text (Text)
+import GHC.Stack (callStack, getCallStack)
 import Network.HTTP.Types.Status (status500)
-import Network.Wai (Response, responseLBS)
+import Network.Wai (Request, Response, responseLBS)
 import Network.Wai.Handler.Warp
 import Routes
 import Servant
@@ -17,8 +17,13 @@ errHandler :: SomeException -> Response
 errHandler se = do
   responseLBS status500 [] (encode $ Status False "Something went wrong!")
 
-ecSettings :: Int -> Settings
-ecSettings port = setOnExceptionResponse errHandler $ setPort port defaultSettings
+erSettings :: Int -> Settings
+erSettings port = setOnExceptionResponse errHandler $ setPort port defaultSettings
+
+ebSettings :: Maybe Request -> SomeException -> IO ()
+ebSettings _ se = do
+  putStrLn "\n---------- [ERR] Exception thrown with message:"
+  print se
 
 main :: IO ()
 main = do
@@ -32,4 +37,4 @@ main = do
           )
   putStrLn $ "Starting server running on port " <> show port
 
-  runSettings (ecSettings port) app
+  runSettings (setOnException ebSettings $ erSettings port) app
