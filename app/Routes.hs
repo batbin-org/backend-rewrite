@@ -12,17 +12,17 @@ somethingThatFails = Left "Failed to query the database"
 root :: HandlerT Status
 root = do
   -- Something went wrong!
-  somethingThatFails <!> True
+  somethingThatFails <?> Suppress
   -- Failed to query the database
-  somethingThatFails <!> False
+  somethingThatFails <?> Reflect
   -- A custom message
-  somethingThatFails <?> "A custom message"
+  somethingThatFails <?> Replace "A custom message"
   succeed "BatBin Backend Server"
 
 fetch :: Text -> HandlerT Status
 fetch id = do
   pure $ Status True "some dummy content"
 
-create :: Text -> HandlerT Status
-create content = do
+create :: Text -> String -> HandlerT Status
+create content ip = do
   pure $ Status True "operation done"

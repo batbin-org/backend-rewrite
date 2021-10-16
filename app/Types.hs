@@ -14,6 +14,7 @@ import Servant
     type (:<|>),
     type (:>),
   )
+import Servant.API (RemoteHost)
 
 data Paste = Paste
   { id :: Text,
@@ -44,4 +45,4 @@ type BatbinAPI =
     -- GET /paste/:id -> Paste Content (in PlainText)
     :<|> "paste" :> Capture "id" Text :> Get '[JSON] Status
     -- POST /paste/:pasteContent -> Status (in JSON)
-    :<|> "paste" :> ReqBody '[JSON] Text :> Post '[JSON] Status
+    :<|> "paste" :> RemoteHost :> ReqBody '[JSON] Text :> Post '[JSON] Status

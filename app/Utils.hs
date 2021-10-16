@@ -4,7 +4,13 @@
 
 module Utils where
 
+import Data.IP
+  ( IP (IPv4, IPv6),
+    fromHostAddress,
+    fromHostAddress6,
+  )
 import Data.Text (Text, unpack)
+import Network.Socket (SockAddr (..))
 import Trans (HandlerT (HandlerT))
 import Types (Status (Status))
 
@@ -25,20 +31,32 @@ instance Show a => Stringable a where
   stringify = show
 
 -- Error handling helpers
+data ErrorTransform = Suppress | Reflect | Replace Text
+
 class Monad m => Failable m where
-  (<?>) :: m a -> Text -> HandlerT a
-  (<!>) :: m a -> Bool -> HandlerT a
+  (<?>) :: m a -> ErrorTransform -> HandlerT a
 
 instance Failable Maybe where
   x <?> t = case x of
-    Nothing -> fail (unpack t)
+    Nothing -> case t of
+      Suppress -> fail "Something went wrong!"
+      Replace err -> fail (unpack err)
+      -- we've got nothing to reflect
+      -- so we might as well suppress
+      Reflect -> fail "Something went wrong!"
     Just v -> pure v
-  x <!> b = x <?> "Something went wrong!"
 
 instance Stringable l => Failable (Either l) where
   x <?> t = case x of
-    Left err -> fail (unpack t)
+    Left err -> case t of
+      Suppress -> fail "Something went wrong!"
+      Replace err' -> fail (unpack err')
+      Reflect -> fail (stringify err)
     Right v -> pure v
-  x <!> b = case x of
-    Left err -> if b then fail "Something went wrong!" else fail (stringify err)
-    Right v -> pure v
+
+-- Generic Utilities
+skToStr :: SockAddr -> IO String
+skToStr sockAddr = case sockAddr of
+  SockAddrInet _ hostAddress -> return $ show $ IPv4 $ fromHostAddress hostAddress
+  SockAddrInet6 _ _ hostAddress6 _ -> return $ show $ IPv6 $ fromHostAddress6 hostAddress6
+  SockAddrUnix _ -> error "UNIX address found on the web!"

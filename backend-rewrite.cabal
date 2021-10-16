@@ -17,6 +17,8 @@ executable backend-rewrite
                         , servant-server
                         , http-types
                         , bytestring
+                        , iproute
+                        , network
                         , servant
                         , aeson
                         , text
