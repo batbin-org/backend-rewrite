@@ -1,23 +1,23 @@
 module Routes where
 
 import Control.Monad.IO.Class
-import Data.Text (Text)
-import Trans (HandlerT, liftHT)
+import Data.Text (Text, unpack)
+import Trans (HandlerT, liftHT, succeed)
 import Types (Status (Status))
 import Utils
 
 somethingThatFails :: Either String Int
 somethingThatFails = Left "Failed to query the database"
 
-nomethingThatFails :: Either Status Int
-nomethingThatFails = Left $ Status False "Failed to query the database"
-
 root :: HandlerT Status
 root = do
-  liftHT nomethingThatFails
-  htFromEither "yea" somethingThatFails
-  liftIO (pure somethingThatFails) >>= htFromEither "yes"
-  pure $ Status True "BatBin Backend Server"
+  -- Something went wrong!
+  somethingThatFails <!> True
+  -- Failed to query the database
+  somethingThatFails <!> False
+  -- A custom message
+  somethingThatFails <?> "A custom message"
+  succeed "BatBin Backend Server"
 
 fetch :: Text -> HandlerT Status
 fetch id = do

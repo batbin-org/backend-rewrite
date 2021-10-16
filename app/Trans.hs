@@ -8,6 +8,9 @@ import Types (Status (Status))
 
 newtype HandlerT a = HandlerT {runHandlerT :: Handler (Either Status a)}
 
+succeed :: Text -> HandlerT Status
+succeed t = pure (Status True t)
+
 liftHT :: Either Status a -> HandlerT a
 liftHT v = HandlerT $ pure v
 
