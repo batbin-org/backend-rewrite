@@ -8,8 +8,6 @@ import Data.Text (Text, unpack)
 import Trans (HandlerT (HandlerT))
 import Types (Status (Status))
 
-type RespType = Status
-
 -- Stringable
 class Stringable a where
   stringify :: a -> String
@@ -44,14 +42,3 @@ instance Stringable l => Failable (Either l) where
   x <!> b = case x of
     Left err -> if b then fail "Something went wrong!" else fail (stringify err)
     Right v -> pure v
-
--- utils
-htFromMaybe :: Text -> Maybe a -> HandlerT a
-htFromMaybe t m = case m of
-  Nothing -> fail (unpack t)
-  Just v -> pure v
-
-htFromEither :: Text -> Either e a -> HandlerT a
-htFromEither t e = case e of
-  Left err -> fail (unpack t)
-  Right v -> pure v
