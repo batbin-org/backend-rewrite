@@ -55,8 +55,8 @@ instance Stringable l => Failable (Either l) where
     Right v -> pure v
 
 -- Generic Utilities
-skToStr :: SockAddr -> IO String
+skToStr :: SockAddr -> String
 skToStr sockAddr = case sockAddr of
-  SockAddrInet _ hostAddress -> return $ show $ IPv4 $ fromHostAddress hostAddress
-  SockAddrInet6 _ _ hostAddress6 _ -> return $ show $ IPv6 $ fromHostAddress6 hostAddress6
+  SockAddrInet _ h4 -> show $ IPv4 $ fromHostAddress h4
+  SockAddrInet6 _ _ h6 _ -> show $ IPv6 $ fromHostAddress6 h6
   SockAddrUnix _ -> error "UNIX address found on the web!"

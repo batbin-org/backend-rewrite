@@ -24,8 +24,7 @@ fRouteWrapper fn txt = do
 
 cRouteWrapper :: (Text -> String -> HandlerT Status) -> SockAddr -> Text -> Handler Status
 cRouteWrapper fn sk txt = do
-  ip <- liftIO $ skToStr sk
-  val <- runHandlerT $ fn txt ip
+  val <- runHandlerT $ fn txt (skToStr sk)
   case val of
     Left err -> pure err
     Right v -> pure v
