@@ -21,8 +21,8 @@ root = do
 
 fetch :: Text -> HandlerT Status
 fetch id = do
-  pure $ Status True "some dummy content"
+  succeed "some dummy content"
 
 create :: Text -> String -> HandlerT Status
 create content ip = do
-  pure $ Status True "operation done"
+  succeed "operation done"
