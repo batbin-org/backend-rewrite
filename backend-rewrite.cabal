@@ -7,7 +7,8 @@ maintainer:               udit.karode@gmail.com
 executable backend-rewrite
     main-is:              Main.hs
 
-    other-modules:        Wrappers
+    other-modules:        Database
+                        , Wrappers
                         , Routes
                         , Types
                         , Trans
@@ -15,8 +16,10 @@ executable backend-rewrite
 
     build-depends:        base ^>=4.15.0.0
                         , servant-server
+                        , sqlite-simple
                         , http-types
                         , bytestring
+                        , directory
                         , iproute
                         , network
                         , servant

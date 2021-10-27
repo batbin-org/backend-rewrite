@@ -3,6 +3,9 @@ cradle:
     - path: "app/Main.hs"
       component: "backend-rewrite:exe:backend-rewrite"
 
+    - path: "app/Database.hs"
+      component: "backend-rewrite:exe:backend-rewrite"
+
     - path: "app/Wrappers.hs"
       component: "backend-rewrite:exe:backend-rewrite"
 
