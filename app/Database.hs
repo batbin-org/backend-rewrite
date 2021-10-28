@@ -44,8 +44,8 @@ getRandomName c = do
   randomName <-
     query_
       c
-      "SELECT * FROM table \
+      "SELECT * FROM identifier \
       \WHERE id \
-      \IN (SELECT id FROM table ORDER BY RANDOM() LIMIT 1)" ::
+      \IN (SELECT id FROM identifier ORDER BY RANDOM() LIMIT 1)" ::
       IO [Identifier]
   pure $ name $ head randomName
