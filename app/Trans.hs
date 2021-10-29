@@ -14,9 +14,6 @@ succeed t = pure (Status True t)
 liftHT :: Either Status a -> HandlerT a
 liftHT v = HandlerT $ pure v
 
-failHT :: Text -> HandlerT Status
-failHT err = HandlerT $ pure (Left $ Status False err)
-
 instance MonadIO HandlerT where
   liftIO = liftIO
 
