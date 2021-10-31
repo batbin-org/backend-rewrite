@@ -3,7 +3,9 @@ module Main where
 import Control.Exception (SomeException)
 import Data.Aeson (encode)
 import Data.Proxy (Proxy (..))
-import Data.Text (Text)
+import Data.Text as T (Text, unpack)
+import Database (getRandomName, migrate, populateFromFile)
+import Database.SQLite.Simple (open)
 import Network.HTTP.Types.Status (status500)
 import Network.Wai (Request, Response, responseLBS)
 import Network.Wai.Handler.Warp
@@ -16,6 +18,7 @@ import Network.Wai.Handler.Warp
   )
 import Routes (create, fetch, root)
 import Servant (Proxy (..), serve, type (:<|>) ((:<|>)))
+import System.Directory (doesFileExist)
 import Types (BatbinAPI, Status (Status))
 import Wrappers (cRouteWrapper, fRouteWrapper, rootRouteWrapper)
 
@@ -36,13 +39,23 @@ ebSettings _ se = do
 main :: IO ()
 main = do
   let port = 8080 :: Int
+
+  let db = "batbin.db"
+
+  didExist <- doesFileExist db
+  conn <- open db
+  migrate conn
+  if not didExist then populateFromFile conn "words_alpha.txt" else pure ()
+
   let app =
         serve
           (Proxy :: Proxy BatbinAPI)
           ( rootRouteWrapper root
-              :<|> fRouteWrapper fetch
-              :<|> cRouteWrapper create
+              :<|> fRouteWrapper fetch conn
+              :<|> cRouteWrapper create conn
           )
-  putStrLn $ "[i] starting paste server on port " <> show port
 
+  putStrLn $ "[i] starting paste server on port " <> show port
+  n <- getRandomName conn
+  putStrLn $ T.unpack n
   runSettings (setOnException ebSettings $ erSettings port) app

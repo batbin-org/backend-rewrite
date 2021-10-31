@@ -6,13 +6,13 @@ import Database.SQLite.Simple (Connection (Connection), Only (Only), ToRow (toRo
 import Database.SQLite.Simple.FromRow (FromRow (fromRow), field)
 import System.Directory (doesDirectoryExist, doesFileExist, listDirectory)
 
-data Identifier = Identifier {name :: T.Text, taken :: Bool}
+data Identifier = Identifier {id :: Int, name :: T.Text, taken :: Bool}
 
 instance FromRow Identifier where
-  fromRow = Identifier <$> field <*> field
+  fromRow = Identifier <$> field <*> field <*> field
 
 instance ToRow Identifier where
-  toRow (Identifier name taken) = toRow (name, taken)
+  toRow (Identifier _ name taken) = toRow (name, taken)
 
 migrate :: Connection -> IO ()
 migrate c = do
@@ -33,7 +33,7 @@ populateFromFile c f = do
               execute
                 c
                 "INSERT INTO identifier (name, taken) VALUES (?, ?)"
-                (Identifier txt False)
+                (Identifier (-1) txt False)
         mapM_ mapFn names
 
 markAsTaken :: Connection -> T.Text -> IO ()
@@ -46,7 +46,7 @@ getRandomName c = do
       c
       "SELECT * FROM identifier \
       \WHERE id \
-      \IN (SELECT id FROM identifier ORDER BY RANDOM() LIMIT 1)" ::
+      \IN (SELECT id FROM identifier WHERE taken = 0 ORDER BY RANDOM() LIMIT 1)" ::
       IO [Identifier]
   pure $ name $ head randomName
 
