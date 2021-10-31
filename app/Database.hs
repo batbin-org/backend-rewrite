@@ -4,7 +4,7 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Database.SQLite.Simple (Connection (Connection), Only (Only), ToRow (toRow), execute, execute_, query, query_)
 import Database.SQLite.Simple.FromRow (FromRow (fromRow), field)
-import System.Directory (doesFileExist)
+import System.Directory (doesDirectoryExist, doesFileExist, listDirectory)
 
 data Identifier = Identifier {name :: T.Text, taken :: Bool}
 
@@ -15,12 +15,12 @@ instance ToRow Identifier where
   toRow (Identifier name taken) = toRow (name, taken)
 
 migrate :: Connection -> IO ()
-migrate conn = do
+migrate c = do
   let sql =
         "CREATE TABLE IF NOT EXISTS identifier\
         \(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, taken BOOLEAN,\
         \ UNIQUE(name))"
-  execute_ conn sql
+  execute_ c sql
 
 populateFromFile :: Connection -> String -> IO ()
 populateFromFile c f = do
@@ -49,3 +49,13 @@ getRandomName c = do
       \IN (SELECT id FROM identifier ORDER BY RANDOM() LIMIT 1)" ::
       IO [Identifier]
   pure $ name $ head randomName
+
+repopulateFromFs :: Connection -> String -> String -> IO ()
+repopulateFromFs c df pd = do
+  doesDirectoryExist pd >>= \b ->
+    if not b
+      then error "directory to repopulate from does not exist!"
+      else do
+        files <- listDirectory pd
+        populateFromFile c df
+        mapM_ (markAsTaken c . T.pack) files
