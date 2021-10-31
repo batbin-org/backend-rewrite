@@ -56,6 +56,4 @@ main = do
           )
 
   putStrLn $ "[i] starting paste server on port " <> show port
-  n <- getRandomName conn
-  putStrLn $ T.unpack n
   runSettings (setOnException ebSettings $ erSettings port) app

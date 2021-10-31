@@ -48,7 +48,7 @@ getRandomName c = do
       \WHERE id \
       \IN (SELECT id FROM identifier WHERE taken = 0 ORDER BY RANDOM() LIMIT 1)" ::
       IO [Identifier]
-  pure $ name $ head randomName
+  pure $ T.replace "\r" "" (name $ head randomName)
 
 repopulateFromFs :: Connection -> String -> String -> IO ()
 repopulateFromFs c df pd = do
