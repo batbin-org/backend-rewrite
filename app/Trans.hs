@@ -2,6 +2,7 @@ module Trans where
 
 import Control.Monad.Fail (MonadFail)
 import Control.Monad.IO.Class (MonadIO, liftIO)
+import Data.Functor ((<&>))
 import Data.Text (Text, pack)
 import Servant (Handler)
 import Types (Status (Status))
@@ -15,7 +16,7 @@ liftHT :: Either Status a -> HandlerT a
 liftHT v = HandlerT $ pure v
 
 instance MonadIO HandlerT where
-  liftIO = liftIO
+  liftIO action = HandlerT $ liftIO action <&> Right
 
 instance MonadFail HandlerT where
   fail msg = HandlerT (pure (Left (Status False (pack msg))))
