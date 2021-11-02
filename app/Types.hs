@@ -44,5 +44,5 @@ type BatbinAPI =
   Get '[JSON] Status
     -- GET /paste/:id -> Paste Content (in PlainText)
     :<|> "paste" :> Capture "id" Text :> Get '[JSON] Status
-    -- POST /paste/:pasteContent -> Status (in JSON)
-    :<|> "paste" :> RemoteHost :> ReqBody '[JSON] Text :> Post '[JSON] Status
+    -- POST /paste/ -> Status (in JSON)
+    :<|> "paste" :> RemoteHost :> ReqBody '[PlainText] Text :> Post '[JSON] Status

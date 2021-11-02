@@ -4,7 +4,7 @@ import Cli (Cli (pastesDir))
 import Control.Monad.IO.Class
 import Data.Text as T (Text, length, unpack)
 import Data.Text.IO as TIO
-import Database (getRandomName)
+import Database (getRandomName, markAsTaken)
 import Database.SQLite.Simple (Connection)
 import System.Directory (doesFileExist)
 import Text.Regex (matchRegex)
@@ -36,7 +36,7 @@ fetch conn cli id = do
     matchRegex alphabets (unpack id)
       <?> Replace "Paste ID cannot contain non-alphabet characters!"
 
-  liftIO (doesFileExist path)
+  liftIO (fb <$> doesFileExist path)
     >>= (<?!>) (Replace "The provided paste ID does not exist!")
 
   content <- liftIO $ TIO.readFile path
@@ -48,11 +48,12 @@ create conn cli content ip = do
   rn <- liftIO $ getRandomName conn
   let path = pastesDir cli <> "/" <> unpack rn
 
-  liftIO (doesFileExist path) >>= (<?!>) Suppress
+  liftIO (fb <$> doesFileExist path) >>= (<?!>) Suppress
 
-  (T.length content > 50000) <!?> Replace "Paste too large!"
-  (T.length content == 0) <!?> Replace "Paste cannot be empty!"
+  fb (T.length content > 50000) <!?> Replace "Paste too large!"
+  fb (T.length content == 0) <!?> Replace "Paste cannot be empty!"
 
   liftIO $ TIO.writeFile path content
+  liftIO $ markAsTaken conn rn
 
-  succeed "Operation successful!"
+  succeed rn

@@ -55,6 +55,10 @@ instance Stringable l => Failable (Either l) where
       Reflect -> fail (stringify err)
     Right v -> pure v
 
+fb :: Bool -> Bool
+fb True = False
+fb False = True
+
 (<?!>) :: ErrorTransform -> Bool -> HandlerT Bool
 (<?!>) t v =
   if v
