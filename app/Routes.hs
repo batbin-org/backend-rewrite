@@ -2,7 +2,7 @@ module Routes where
 
 import Cli (Cli (pastesDir))
 import Control.Monad.IO.Class
-import Data.Text as T (Text, unpack)
+import Data.Text as T (Text, length, unpack)
 import Data.Text.IO as TIO
 import Database (getRandomName)
 import Database.SQLite.Simple (Connection)
@@ -37,7 +37,7 @@ fetch conn cli id = do
       <?> Replace "Paste ID cannot contain non-alphabet characters!"
 
   liftIO (doesFileExist path)
-    >>= (<??>) "The provided paste ID does not exist!"
+    >>= (<?!>) (Replace "The provided paste ID does not exist!")
 
   content <- liftIO $ TIO.readFile path
 
@@ -46,4 +46,13 @@ fetch conn cli id = do
 create :: Connection -> Cli -> Text -> String -> HandlerT Status
 create conn cli content ip = do
   rn <- liftIO $ getRandomName conn
-  succeed ""
+  let path = pastesDir cli <> "/" <> unpack rn
+
+  liftIO (doesFileExist path) >>= (<?!>) Suppress
+
+  (T.length content > 50000) <!?> Replace "Paste too large!"
+  (T.length content == 0) <!?> Replace "Paste cannot be empty!"
+
+  liftIO $ TIO.writeFile path content
+
+  succeed "Operation successful!"

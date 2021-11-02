@@ -55,8 +55,17 @@ instance Stringable l => Failable (Either l) where
       Reflect -> fail (stringify err)
     Right v -> pure v
 
-(<??>) :: String -> Bool -> HandlerT Bool
-(<??>) t v = if v then pure v else fail t
+(<?!>) :: ErrorTransform -> Bool -> HandlerT Bool
+(<?!>) t v =
+  if v
+    then pure v
+    else case t of
+      Suppress -> fail "Something went wrong!"
+      Reflect -> fail "A bool was false!"
+      Replace t -> fail (unpack t)
+
+(<!?>) :: Bool -> ErrorTransform -> HandlerT Bool
+(<!?>) = flip (<?!>)
 
 -- Generic Utilities
 alphabets :: Regex
