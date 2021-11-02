@@ -63,11 +63,8 @@ batbinServer cli = do
   putStrLn $ "[i] starting paste server on port " <> show port
   runSettings (setOnException ebSettings $ erSettings port) app
 
-batbin :: Cli -> IO ()
-batbin (Cli pastesDir repopulateDb) = undefined
-
 main :: IO ()
-main = batbin =<< execParser opts'
+main = batbinServer =<< execParser opts'
   where
     opts' =
       info
