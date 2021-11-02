@@ -11,6 +11,7 @@ import Data.IP
   )
 import Data.Text (Text, unpack)
 import Network.Socket (SockAddr (..))
+import Text.Regex (Regex, mkRegex)
 import Trans (HandlerT (HandlerT))
 import Types (Status (Status))
 
@@ -54,7 +55,13 @@ instance Stringable l => Failable (Either l) where
       Reflect -> fail (stringify err)
     Right v -> pure v
 
+(<??>) :: String -> Bool -> HandlerT Bool
+(<??>) t v = if v then pure v else fail t
+
 -- Generic Utilities
+alphabets :: Regex
+alphabets = mkRegex "^[a-zA-Z]+$"
+
 skToStr :: SockAddr -> String
 skToStr sockAddr = case sockAddr of
   SockAddrInet _ h4 -> show $ IPv4 $ fromHostAddress h4

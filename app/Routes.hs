@@ -1,10 +1,13 @@
 module Routes where
 
-import Cli (Cli)
+import Cli (Cli (pastesDir))
 import Control.Monad.IO.Class
-import Data.Text (Text, unpack)
+import Data.Text as T (Text, unpack)
+import Data.Text.IO as TIO
 import Database (getRandomName)
 import Database.SQLite.Simple (Connection)
+import System.Directory (doesFileExist)
+import Text.Regex (matchRegex)
 import Trans (HandlerT, liftHT, succeed)
 import Types (Status (Status))
 import Utils
@@ -23,13 +26,22 @@ demo = do
   succeed "This is how error handling works!"
 
 root :: HandlerT Status
-root = do
-  succeed "BatBin Backend Server"
+root = succeed "BatBin Backend Server (Rewritten)"
 
 fetch :: Connection -> Cli -> Text -> HandlerT Status
 fetch conn cli id = do
-  rn <- liftIO $ getRandomName conn
-  succeed rn
+  let path = pastesDir cli <> "/" <> unpack id
+
+  valid <-
+    matchRegex alphabets (unpack id)
+      <?> Replace "Paste ID cannot contain non-alphabet characters!"
+
+  liftIO (doesFileExist path)
+    >>= (<??>) "The provided paste ID does not exist!"
+
+  content <- liftIO $ TIO.readFile path
+
+  succeed content
 
 create :: Connection -> Cli -> Text -> String -> HandlerT Status
 create conn cli content ip = do
