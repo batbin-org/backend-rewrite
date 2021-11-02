@@ -13,7 +13,7 @@ succeed :: Text -> HandlerT Status
 succeed t = pure (Status True t)
 
 liftHT :: Either Status a -> HandlerT a
-liftHT v = HandlerT $ pure v
+liftHT = HandlerT . pure
 
 instance MonadIO HandlerT where
   liftIO action = HandlerT $ liftIO action <&> Right
