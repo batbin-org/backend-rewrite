@@ -20,3 +20,6 @@ cradle:
 
     - path: "app/Utils.hs"
       component: "backend-rewrite:exe:backend-rewrite"
+
+    - path: "app/Cli.hs"
+      component: "backend-rewrite:exe:backend-rewrite"

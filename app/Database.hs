@@ -50,12 +50,11 @@ getRandomName c = do
       IO [Identifier]
   pure $ T.replace "\r" "" (name $ head randomName)
 
-repopulateFromFs :: Connection -> String -> String -> IO ()
-repopulateFromFs c df pd = do
+repopulateFromFs :: Connection -> String -> IO ()
+repopulateFromFs c pd = do
   doesDirectoryExist pd >>= \b ->
     if not b
       then error "directory to repopulate from does not exist!"
       else do
         files <- listDirectory pd
-        populateFromFile c df
         mapM_ (markAsTaken c . T.pack) files

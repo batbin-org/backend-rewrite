@@ -32,4 +32,5 @@ fetch conn id = do
 
 create :: Connection -> Text -> String -> HandlerT Status
 create conn content ip = do
+  rn <- liftIO $ getRandomName conn
   succeed ""

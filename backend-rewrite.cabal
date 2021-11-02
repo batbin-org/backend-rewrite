@@ -13,8 +13,10 @@ executable backend-rewrite
                         , Types
                         , Trans
                         , Utils
+                        , Cli
 
     build-depends:        base ^>=4.15.0.0
+                        , optparse-applicative
                         , servant-server
                         , sqlite-simple
                         , http-types
@@ -24,6 +26,7 @@ executable backend-rewrite
                         , network
                         , servant
                         , aeson
+                        , Cabal
                         , text
                         , warp
                         , wai
