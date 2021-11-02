@@ -36,7 +36,7 @@ fetch conn cli id = do
     matchRegex alphabets (unpack id)
       <?> Replace "Paste ID cannot contain non-alphabet characters!"
 
-  liftIO (fb <$> doesFileExist path)
+  liftIO (doesFileExist path)
     >>= (<?!>) (Replace "The provided paste ID does not exist!")
 
   content <- liftIO $ TIO.readFile path
