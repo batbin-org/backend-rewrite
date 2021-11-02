@@ -1,5 +1,6 @@
 module Wrappers where
 
+import Cli (Cli)
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.Text (Text)
 import Database.SQLite.Simple (Connection)
@@ -16,16 +17,16 @@ rootRouteWrapper (HandlerT val) = do
     Left err -> pure err
     Right v -> pure v
 
-fRouteWrapper :: (Connection -> Text -> HandlerT Status) -> Connection -> Text -> Handler Status
-fRouteWrapper fn conn txt = do
-  val <- runHandlerT $ fn conn txt
+fRouteWrapper :: (Connection -> Cli -> Text -> HandlerT Status) -> Connection -> Cli -> Text -> Handler Status
+fRouteWrapper fn conn cli txt = do
+  val <- runHandlerT $ fn conn cli txt
   case val of
     Left err -> pure err
     Right v -> pure v
 
-cRouteWrapper :: (Connection -> Text -> String -> HandlerT Status) -> Connection -> SockAddr -> Text -> Handler Status
-cRouteWrapper fn conn sk txt = do
-  val <- runHandlerT $ fn conn txt (skToStr sk)
+cRouteWrapper :: (Connection -> Cli -> Text -> String -> HandlerT Status) -> Connection -> Cli -> SockAddr -> Text -> Handler Status
+cRouteWrapper fn conn cli sk txt = do
+  val <- runHandlerT $ fn conn cli txt (skToStr sk)
   case val of
     Left err -> pure err
     Right v -> pure v

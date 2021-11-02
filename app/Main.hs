@@ -56,8 +56,8 @@ batbinServer cli = do
         serve
           (Proxy :: Proxy BatbinAPI)
           ( rootRouteWrapper root
-              :<|> fRouteWrapper fetch conn
-              :<|> cRouteWrapper create conn
+              :<|> fRouteWrapper fetch conn cli
+              :<|> cRouteWrapper create conn cli
           )
 
   putStrLn $ "[i] starting paste server on port " <> show port

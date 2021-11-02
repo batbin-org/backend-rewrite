@@ -1,5 +1,6 @@
 module Routes where
 
+import Cli (Cli)
 import Control.Monad.IO.Class
 import Data.Text (Text, unpack)
 import Database (getRandomName)
@@ -25,12 +26,12 @@ root :: HandlerT Status
 root = do
   succeed "BatBin Backend Server"
 
-fetch :: Connection -> Text -> HandlerT Status
-fetch conn id = do
+fetch :: Connection -> Cli -> Text -> HandlerT Status
+fetch conn cli id = do
   rn <- liftIO $ getRandomName conn
   succeed rn
 
-create :: Connection -> Text -> String -> HandlerT Status
-create conn content ip = do
+create :: Connection -> Cli -> Text -> String -> HandlerT Status
+create conn cli content ip = do
   rn <- liftIO $ getRandomName conn
   succeed ""
