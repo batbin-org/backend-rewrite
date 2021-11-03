@@ -49,7 +49,11 @@ batbinServer cli = do
 
   migrate conn
 
-  if not didExist then populateFromFile conn "words_alpha.txt" else pure ()
+  if not didExist
+    then do
+      populateFromFile conn "words_alpha.txt"
+      putStrLn "\rPopulation complete!"
+    else pure ()
   if repopulateDb cli then repopulateFromFs conn (pastesDir cli) else pure ()
 
   let app =

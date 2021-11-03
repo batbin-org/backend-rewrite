@@ -24,17 +24,20 @@ migrate c = do
 
 populateFromFile :: Connection -> String -> IO ()
 populateFromFile c f = do
+  putStrLn $ "Beginning database population from file '" <> f <> "'"
   doesFileExist f >>= \de ->
     if not de
       then error "File for population does not exist!"
       else do
         names <- T.lines <$> TIO.readFile f
-        let mapFn txt =
+        let lines = length names
+        let mapFn tup = do
               execute
                 c
                 "INSERT INTO identifier (name, taken) VALUES (?, ?)"
-                (Identifier (-1) txt False)
-        mapM_ mapFn names
+                (Identifier (-1) (snd tup) False)
+              putStr $ "\r" <> show (fst tup) <> " / " <> show lines
+        mapM_ mapFn (zip [0 ..] names)
 
 markAsTaken :: Connection -> T.Text -> IO ()
 markAsTaken c n = execute c "UPDATE identifier SET taken = 1 WHERE name = ?" (Only n)
