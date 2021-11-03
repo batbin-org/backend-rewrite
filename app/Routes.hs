@@ -28,7 +28,7 @@ demo = do
 root :: HandlerT Status
 root = succeed "BatBin Backend Server (Rewritten)"
 
-fetch :: Connection -> Cli -> Text -> HandlerT Status
+fetch :: Connection -> Cli -> Text -> HandlerT Text
 fetch conn cli id = do
   let path = pastesDir cli <> "/" <> unpack id
 
@@ -39,9 +39,7 @@ fetch conn cli id = do
   liftIO (doesFileExist path)
     >>= (<?!>) (Replace "The provided paste ID does not exist!")
 
-  content <- liftIO $ TIO.readFile path
-
-  succeed content
+  liftIO $ TIO.readFile path
 
 create :: Connection -> Cli -> Text -> String -> HandlerT Status
 create conn cli content ip = do
