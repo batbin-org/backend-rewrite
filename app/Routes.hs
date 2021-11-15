@@ -1,29 +1,30 @@
 module Routes where
 
 import Cli (Cli (pastesDir))
-import Control.Monad.IO.Class
+import Control.Monad.IO.Class (MonadIO (liftIO))
+import Data.ByteString.Char8 (readInt)
+import qualified Data.ByteString.Char8 as BS
+import Data.ByteString.UTF8 as B (fromString)
 import Data.Text as T (Text, length, unpack)
-import Data.Text.IO as TIO
+import Data.Text.IO as TIO (readFile, writeFile)
 import Database (getRandomName, markAsTaken)
+import Database.Redis (runRedis)
+import qualified Database.Redis as R
 import Database.SQLite.Simple (Connection)
 import System.Directory (doesFileExist)
 import Text.Regex (matchRegex)
 import Trans (HandlerT, liftHT, succeed)
 import Types (Status (Status))
 import Utils
+  ( ErrorTransform (Replace, Suppress),
+    Failable ((<?>)),
+    alphabets,
+    (<!?>),
+    (<?!>),
+  )
 
-somethingThatFails :: Either String Int
-somethingThatFails = Left "Failed to query the database"
-
-demo :: HandlerT Status
-demo = do
-  -- Something went wrong!
-  somethingThatFails <?> Suppress
-  -- Failed to query the database
-  somethingThatFails <?> Reflect
-  -- A custom message
-  somethingThatFails <?> Replace "A custom message"
-  succeed "This is how error handling works!"
+pastesPerHour :: Int
+pastesPerHour = 100
 
 root :: HandlerT Status
 root = succeed "BatBin Backend Server (Rewritten)"
@@ -41,17 +42,35 @@ fetch conn cli id = do
 
   liftIO $ TIO.readFile path
 
-create :: Connection -> Cli -> Text -> String -> HandlerT Status
-create conn cli content ip = do
+create :: Connection -> R.Connection -> Cli -> Text -> String -> HandlerT Status
+create conn rconn cli content ip = do
   rn <- liftIO $ getRandomName conn
   let path = pastesDir cli <> "/" <> unpack rn
+  let bip = B.fromString ip
 
-  liftIO (fb <$> doesFileExist path) >>= (<?!>) Suppress
+  liftIO (not <$> doesFileExist path) >>= (<?!>) Suppress
 
-  fb (T.length content > 50000) <!?> Replace "Paste too large!"
-  fb (T.length content == 0) <!?> Replace "Paste cannot be empty!"
+  (T.length content < 50000) <!?> Replace "Paste too large!"
+  (T.length content /= 0) <!?> Replace "Paste cannot be empty!"
 
   liftIO $ TIO.writeFile path content
   liftIO $ markAsTaken conn rn
+
+  numberOfPastes <-
+    liftIO (runRedis rconn $ R.get bip)
+      >>= flip (<?>) Suppress
+
+  case numberOfPastes of
+    Nothing -> liftIO $ runRedis rconn $ R.setex bip 3600 (B.fromString "1") >> pure ()
+    Just n -> do
+      val <- readInt n <?> Suppress
+      if fst val >= 100
+        then do
+          ttl <- liftIO (runRedis rconn $ R.ttl bip) >>= flip (<?>) Suppress
+          fail $ "Limit exceeded! Next paste can be stored in " <> show ttl <> "seconds"
+          pure ()
+        else do
+          eIncr <- liftIO (runRedis rconn $ R.incr bip) >>= flip (<?>) Suppress
+          pure ()
 
   succeed rn

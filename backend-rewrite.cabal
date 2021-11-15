@@ -20,12 +20,14 @@ executable backend-rewrite
                         , servant-server
                         , sqlite-simple
                         , regex-compat
+                        , utf8-string
                         , http-types
                         , bytestring
                         , directory
                         , iproute
                         , network
                         , servant
+                        , hedis
                         , aeson
                         , Cabal
                         , text

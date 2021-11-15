@@ -6,6 +6,7 @@ import Data.Aeson (encode)
 import Data.Proxy (Proxy (..))
 import Data.Text as T (Text, unpack)
 import Database (getRandomName, migrate, populateFromFile, repopulateFromFs)
+import Database.Redis (checkedConnect, defaultConnectInfo)
 import Database.SQLite.Simple (open)
 import Network.HTTP.Types.Status (status500)
 import Network.Wai (Request, Response, responseLBS)
@@ -35,8 +36,12 @@ errHandler se = do
 -- wai-wide exception logger
 ebSettings :: Maybe Request -> SomeException -> IO ()
 ebSettings _ se = do
-  putStrLn "\n---------- [ERR] Exception thrown with message:"
-  print se
+  let str = show se
+  case str of
+    "Thread killed by timeout manager" -> pure ()
+    _ -> do
+      putStrLn "\n---------- [ERR] Exception thrown with message:"
+      putStrLn str
 
 batbinServer :: Cli -> IO ()
 batbinServer cli = do
@@ -45,7 +50,9 @@ batbinServer cli = do
 
   didExist <- doesFileExist db
   pdExist <- createDirectoryIfMissing True (pastesDir cli)
+
   conn <- open db
+  rconn <- checkedConnect defaultConnectInfo
 
   migrate conn
 
@@ -61,7 +68,7 @@ batbinServer cli = do
           (Proxy :: Proxy BatbinAPI)
           ( rootRouteWrapper root
               :<|> fRouteWrapper fetch conn cli
-              :<|> cRouteWrapper create conn cli
+              :<|> cRouteWrapper create conn rconn cli
           )
 
   putStrLn $ "[i] starting paste server on port " <> show port

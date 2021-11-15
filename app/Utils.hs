@@ -34,6 +34,17 @@ instance Show a => Stringable a where
 -- Error handling helpers
 data ErrorTransform = Suppress | Reflect | Replace Text
 
+-- usage example of <?>
+-- demo :: HandlerT Status
+-- demo = do
+--   -- Something went wrong!
+--   somethingThatFails <?> Suppress
+--   -- Failed to query the database
+--   somethingThatFails <?> Reflect
+--   -- A custom message
+--   somethingThatFails <?> Replace "A custom message"
+--   succeed "This is how error handling works!"
+
 class Monad m => Failable m where
   (<?>) :: m a -> ErrorTransform -> HandlerT a
 
@@ -54,10 +65,6 @@ instance Stringable l => Failable (Either l) where
       Replace err' -> fail (unpack err')
       Reflect -> fail (stringify err)
     Right v -> pure v
-
-fb :: Bool -> Bool
-fb True = False
-fb False = True
 
 (<?!>) :: ErrorTransform -> Bool -> HandlerT Bool
 (<?!>) t v =
