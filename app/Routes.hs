@@ -5,7 +5,7 @@ import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.ByteString.Char8 (readInt)
 import qualified Data.ByteString.Char8 as BS
 import Data.ByteString.UTF8 as B (fromString)
-import Data.Text as T (Text, length, unpack)
+import Data.Text as T (Text, isPrefixOf, length, unpack)
 import Data.Text.IO as TIO (readFile, writeFile)
 import Database (getRandomName, markAsTaken)
 import Database.Redis (runRedis)
@@ -46,6 +46,8 @@ create :: Connection -> R.Connection -> Cli -> Text -> String -> HandlerT Status
 create conn rconn cli content ip = do
   (T.length content < 50000) <!?> Replace "Paste too large!"
   (T.length content /= 0) <!?> Replace "Paste cannot be empty!"
+
+  T.isPrefixOf "[Batbin Error]" content <!?> Replace "You can't save a paste that resembles a Batbin error message!"
 
   let bip = B.fromString ip
 
