@@ -1,6 +1,6 @@
 module Main where
 
-import Cli (Cli (Cli, pastesDir, repopulateDb), opts)
+import Cli (Cli (Cli, dbPath, pastesDir, repopulateDb), opts)
 import Control.Exception (SomeException)
 import Data.Aeson (encode)
 import Data.Proxy (Proxy (..))
@@ -19,6 +19,12 @@ import Network.Wai.Handler.Warp
     setPort,
   )
 import Options.Applicative
+  ( execParser,
+    fullDesc,
+    header,
+    info,
+    progDesc,
+  )
 import Routes (create, fetch, root)
 import Servant (Proxy (..), serve, type (:<|>) ((:<|>)))
 import System.Directory (createDirectoryIfMissing, doesDirectoryExist, doesFileExist)
@@ -46,7 +52,7 @@ ebSettings _ se = do
 batbinServer :: Cli -> IO ()
 batbinServer cli = do
   let port = 8080 :: Int
-  let db = "batbin.db"
+  let db = dbPath cli
 
   didExist <- doesFileExist db
   pdExist <- createDirectoryIfMissing True (pastesDir cli)
