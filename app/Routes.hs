@@ -44,24 +44,17 @@ fetch conn cli id = do
 
 create :: Connection -> R.Connection -> Cli -> Text -> String -> HandlerT Status
 create conn rconn cli content ip = do
-  rn <- liftIO $ getRandomName conn
-  let path = pastesDir cli <> "/" <> unpack rn
-  let bip = B.fromString ip
-
-  liftIO (not <$> doesFileExist path) >>= (<?!>) Suppress
-
   (T.length content < 50000) <!?> Replace "Paste too large!"
   (T.length content /= 0) <!?> Replace "Paste cannot be empty!"
 
-  liftIO $ TIO.writeFile path content
-  liftIO $ markAsTaken conn rn
+  let bip = B.fromString ip
 
   numberOfPastes <-
     liftIO (runRedis rconn $ R.get bip)
       >>= flip (<?>) Suppress
 
   case numberOfPastes of
-    Nothing -> liftIO $ runRedis rconn $ R.setex bip 3600 (B.fromString "1") >> pure ()
+    Nothing -> liftIO $ runRedis rconn $ R.setex bip 3600 (B.fromString "0") >> pure ()
     Just n -> do
       val <- readInt n <?> Suppress
       if fst val >= 100
@@ -69,8 +62,16 @@ create conn rconn cli content ip = do
           ttl <- liftIO (runRedis rconn $ R.ttl bip) >>= flip (<?>) Suppress
           fail $ "Limit exceeded! Next paste can be stored in " <> show ttl <> "seconds"
           pure ()
-        else do
-          eIncr <- liftIO (runRedis rconn $ R.incr bip) >>= flip (<?>) Suppress
-          pure ()
+        else pure ()
+
+  rn <- liftIO $ getRandomName conn
+  let path = pastesDir cli <> "/" <> unpack rn
+  liftIO (not <$> doesFileExist path) >>= (<?!>) Suppress
+
+  liftIO $ TIO.writeFile path content
+  liftIO $ markAsTaken conn rn
+
+  liftIO (runRedis rconn $ R.incr bip)
+    >>= flip (<?>) (Replace $ "Your paste was saved, but rate-limit counter failed. ID: " <> rn)
 
   succeed rn
