@@ -47,7 +47,7 @@ create conn rconn cli content ip = do
   (T.length content < 50000) <!?> Replace "Paste too large!"
   (T.length content /= 0) <!?> Replace "Paste cannot be empty!"
 
-  T.isPrefixOf "[Batbin Error]" content <!?> Replace "You can't save a paste that resembles a Batbin error message!"
+  not (T.isPrefixOf "[Batbin Error]" content) <!?> Replace "You can't save a paste that resembles a Batbin error message!"
 
   let bip = B.fromString ip
 
