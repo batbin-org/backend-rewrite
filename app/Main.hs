@@ -5,6 +5,7 @@ import Control.Exception (SomeException)
 import Data.Aeson (encode)
 import Data.Proxy (Proxy (..))
 import Data.Text as T (Text, unpack)
+import qualified Data.Text.IO as TIO (putStrLn)
 import Database (getRandomName, migrate, populateFromFile, repopulateFromFs)
 import Database.Redis (checkedConnect, defaultConnectInfo)
 import Database.SQLite.Simple (open)
@@ -30,6 +31,7 @@ import Servant (Proxy (..), serve, type (:<|>) ((:<|>)))
 import System.Directory (createDirectoryIfMissing, doesDirectoryExist, doesFileExist)
 import Types (BatbinAPI, Status (Status))
 import Wrappers (cRouteWrapper, fRouteWrapper, rootRouteWrapper)
+import TextShow (TextShow(showt))
 
 -- wai-wide exception handler
 erSettings :: Int -> Settings
@@ -42,12 +44,12 @@ errHandler se = do
 -- wai-wide exception logger
 ebSettings :: Maybe Request -> SomeException -> IO ()
 ebSettings _ se = do
-  let str = show se
+  let str = showt se
   case str of
     "Thread killed by timeout manager" -> pure ()
     _ -> do
       putStrLn "\n---------- [ERR] Exception thrown with message:"
-      putStrLn str
+      TIO.putStrLn str
 
 batbinServer :: Cli -> IO ()
 batbinServer cli = do

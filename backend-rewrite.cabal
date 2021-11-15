@@ -24,6 +24,7 @@ executable backend-rewrite
                         , http-types
                         , bytestring
                         , directory
+                        , text-show
                         , iproute
                         , network
                         , servant
