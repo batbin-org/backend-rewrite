@@ -2,9 +2,11 @@ module Cli where
 
 import Options.Applicative
   ( Parser,
+    auto,
     help,
     long,
     metavar,
+    option,
     strOption,
     switch,
   )
@@ -12,6 +14,7 @@ import Options.Applicative
 data Cli = Cli
   { pastesDir :: String,
     dbPath :: String,
+    port :: Int,
     repopulateDb :: Bool
   }
 
@@ -27,6 +30,12 @@ opts =
       ( long "db-path"
           <> metavar "DATABASE_PATH"
           <> help "The path to the database (sqlite .db file)"
+      )
+    <*> option
+      auto
+      ( long "port"
+          <> metavar "PORT"
+          <> help "The port to run the service on"
       )
     <*> switch
       ( long "repopulateDb"

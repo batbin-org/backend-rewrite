@@ -1,6 +1,6 @@
 module Main where
 
-import Cli (Cli (Cli, dbPath, pastesDir, repopulateDb), opts)
+import Cli (Cli (Cli, dbPath, pastesDir, port, repopulateDb), opts)
 import Control.Exception (SomeException)
 import Data.Aeson (encode)
 import Data.Proxy (Proxy (..))
@@ -29,9 +29,9 @@ import Options.Applicative
 import Routes (create, fetch, root)
 import Servant (Proxy (..), serve, type (:<|>) ((:<|>)))
 import System.Directory (createDirectoryIfMissing, doesDirectoryExist, doesFileExist)
+import TextShow (TextShow (showt))
 import Types (BatbinAPI, Status (Status))
 import Wrappers (cRouteWrapper, fRouteWrapper, rootRouteWrapper)
-import TextShow (TextShow(showt))
 
 -- wai-wide exception handler
 erSettings :: Int -> Settings
@@ -53,7 +53,6 @@ ebSettings _ se = do
 
 batbinServer :: Cli -> IO ()
 batbinServer cli = do
-  let port = 8080 :: Int
   let db = dbPath cli
 
   didExist <- doesFileExist db
@@ -79,8 +78,8 @@ batbinServer cli = do
               :<|> cRouteWrapper create conn rconn cli
           )
 
-  putStrLn $ "[i] starting paste server on port " <> show port
-  runSettings (setOnException ebSettings $ erSettings port) app
+  TIO.putStrLn $ "[i] starting paste server on port " <> showt (port cli)
+  runSettings (setOnException ebSettings $ erSettings (port cli)) app
 
 main :: IO ()
 main = batbinServer =<< execParser opts'
