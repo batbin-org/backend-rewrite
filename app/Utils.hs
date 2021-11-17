@@ -80,7 +80,7 @@ instance Stringable l => Failable (Either l) where
 
 -- Generic Utilities
 alphabets :: Regex
-alphabets = mkRegex "^[a-zA-Z]+$"
+alphabets = mkRegex "^[a-zA-Z0-9]+$"
 
 skToStr :: SockAddr -> String
 skToStr sockAddr = case sockAddr of
