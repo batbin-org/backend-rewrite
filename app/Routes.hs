@@ -13,7 +13,6 @@ import Database.Redis (runRedis)
 import qualified Database.Redis as R
 import Database.SQLite.Simple (Connection)
 import System.Directory (doesFileExist)
-import Text.Regex (matchRegex)
 import Trans (HandlerT, liftHT, succeed)
 import Types (Status (Status))
 import Utils
