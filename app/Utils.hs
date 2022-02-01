@@ -11,7 +11,6 @@ import Data.IP
   )
 import Data.Text (Text, unpack)
 import Network.Socket (SockAddr (..))
-import Text.Regex (Regex, mkRegex)
 import Trans (HandlerT (HandlerT))
 import Types (Status (Status))
 
@@ -79,8 +78,8 @@ instance Stringable l => Failable (Either l) where
 (<!?>) = flip (<?!>)
 
 -- Generic Utilities
-alphabets :: Regex
-alphabets = mkRegex "^[a-zA-Z0-9]+$"
+alphabets :: Text
+alphabets = "^[a-zA-Z0-9]+$"
 
 skToStr :: SockAddr -> String
 skToStr sockAddr = case sockAddr of
