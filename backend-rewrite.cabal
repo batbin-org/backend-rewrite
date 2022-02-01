@@ -19,8 +19,8 @@ executable backend-rewrite
                         , optparse-applicative
                         , servant-server
                         , sqlite-simple
-                        , regex-compat
                         , utf8-string
+                        , regex-tdfa
                         , http-types
                         , bytestring
                         , directory
