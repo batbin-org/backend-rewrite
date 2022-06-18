@@ -4,6 +4,7 @@
 
 module Utils where
 
+import Control.Monad.Cont (MonadIO (liftIO))
 import Data.IP
   ( IP (IPv4, IPv6),
     fromHostAddress,
@@ -59,10 +60,12 @@ instance Failable Maybe where
 
 instance Stringable l => Failable (Either l) where
   x <?> t = case x of
-    Left err -> case t of
-      Suppress -> fail "Something went wrong!"
-      Replace err' -> fail (unpack err')
-      Reflect -> fail (stringify err)
+    Left err -> do
+      liftIO $ putStrLn ("ERR> " <> stringify err)
+      case t of
+        Suppress -> fail "Something went wrong!"
+        Replace err' -> fail (unpack err')
+        Reflect -> fail (stringify err)
     Right v -> pure v
 
 (<?!>) :: ErrorTransform -> Bool -> HandlerT Bool
