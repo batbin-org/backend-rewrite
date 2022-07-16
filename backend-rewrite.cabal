@@ -18,6 +18,7 @@ executable backend-rewrite
     build-depends:        base ^>=4.16.0.0
                         , optparse-applicative
                         , servant-server
+                        , portable-lines
                         , sqlite-simple
                         , utf8-string
                         , regex-tdfa

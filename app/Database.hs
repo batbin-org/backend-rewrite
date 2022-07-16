@@ -5,6 +5,7 @@ import qualified Data.Text.IO as TIO
 import Database.SQLite.Simple (Connection (Connection), Only (Only), ToRow (toRow), execute, execute_, query, query_)
 import Database.SQLite.Simple.FromRow (FromRow (fromRow), field)
 import System.Directory (doesDirectoryExist, doesFileExist, listDirectory)
+import Text.PortableLines as TPL (lines)
 
 data Identifier = Identifier {id :: Int, name :: T.Text, taken :: Bool}
 
@@ -29,7 +30,7 @@ populateFromFile c f = do
     if not de
       then error "File for population does not exist!"
       else do
-        names <- T.lines <$> TIO.readFile f
+        names <- TPL.lines <$> readFile f
         let lines = length names
         let mapFn tup = do
               execute
@@ -37,7 +38,7 @@ populateFromFile c f = do
                 "INSERT INTO identifier (name, taken) VALUES (?, ?)"
                 (Identifier (-1) (snd tup) False)
               putStr $ "\r" <> show (fst tup) <> " / " <> show lines
-        mapM_ mapFn (zip [0 ..] names)
+        mapM_ mapFn (zip [0 ..] (map T.pack names))
 
 markAsTaken :: Connection -> T.Text -> IO ()
 markAsTaken c n = execute c "UPDATE identifier SET taken = 1 WHERE name = ?" (Only n)
@@ -51,7 +52,7 @@ getRandomName c = do
       \WHERE id \
       \IN (SELECT id FROM identifier WHERE taken = 0 ORDER BY RANDOM() LIMIT 1)" ::
       IO [Identifier]
-  pure $ T.replace "\r" "" (name $ head randomName)
+  pure $ name $ head randomName
 
 repopulateFromFs :: Connection -> String -> IO ()
 repopulateFromFs c pd = do
