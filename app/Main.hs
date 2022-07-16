@@ -58,9 +58,13 @@ batbinServer cli = do
   didExist <- doesFileExist db
   pdExist <- createDirectoryIfMissing True (pastesDir cli)
 
+  putStrLn "accessing the database..."
   conn <- open db
+
+  putStrLn "connecting to the Redis server..."
   rconn <- checkedConnect defaultConnectInfo
 
+  putStrLn "running migration..."
   migrate conn
 
   if not didExist
@@ -68,6 +72,7 @@ batbinServer cli = do
       populateFromFile conn "words_alpha.txt"
       putStrLn "\rPopulation complete!"
     else pure ()
+
   if repopulateDb cli then repopulateFromFs conn (pastesDir cli) else pure ()
 
   let app =
