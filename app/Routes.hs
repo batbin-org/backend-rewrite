@@ -22,6 +22,7 @@ import Utils
     (<!?>),
     (<?!>),
   )
+import Control.Monad (when, void)
 
 pastesPerHour :: Int
 pastesPerHour = 100
@@ -54,15 +55,17 @@ create conn rconn cli content ip = do
       >>= flip (<?>) Suppress
 
   case numberOfPastes of
-    Nothing -> liftIO $ runRedis rconn $ R.setex bip 3600 (B.fromString "0") >> pure ()
+    Nothing -> liftIO $ runRedis rconn $ void (R.setex bip 3600 (B.fromString "1"))
     Just n -> do
       val <- readInt n <?> Suppress
-      if fst val >= 100
-        then do
+      when (fst val >= 100) $ do
           ttl <- liftIO (runRedis rconn $ R.ttl bip) >>= flip (<?>) Suppress
-          fail $ "Limit exceeded! Next paste can be stored in " <> show ttl <> "seconds"
-          pure ()
-        else pure ()
+          if ttl < 0 then do
+            liftIO $ runRedis rconn (R.del [bip])
+            pure ()
+          else do
+            fail $ "Limit exceeded! Next paste can be stored in " <> show ttl <> "seconds"
+            pure ()
 
   rn <- liftIO $ getRandomName conn
   let path = pastesDir cli <> "/" <> unpack rn
