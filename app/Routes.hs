@@ -52,14 +52,14 @@ create conn rconn cli content ip = do
 
   numberOfPastes <-
     liftIO (runRedis rconn $ R.get bip)
-      >>= flip (<?>) Suppress
+      >>= flip (<?>) (Suppress "Failed to get number of pastes")
 
   case numberOfPastes of
     Nothing -> liftIO $ runRedis rconn $ void (R.setex bip 3600 (B.fromString "1"))
     Just n -> do
-      val <- readInt n <?> Suppress
+      val <- readInt n <?> Suppress ("Failed to read number of pastes as int, was " <> show n)
       when (fst val >= 100) $ do
-          ttl <- liftIO (runRedis rconn $ R.ttl bip) >>= flip (<?>) Suppress
+          ttl <- liftIO (runRedis rconn $ R.ttl bip) >>= flip (<?>) (Suppress "Failed to get ttl")
           if ttl < 0 then do
             liftIO $ runRedis rconn (R.del [bip])
             pure ()
@@ -69,7 +69,7 @@ create conn rconn cli content ip = do
 
   rn <- liftIO $ getRandomName conn
   let path = pastesDir cli <> "/" <> unpack rn
-  liftIO (not <$> doesFileExist path) >>= (<?!>) Suppress
+  liftIO (not <$> doesFileExist path) >>= (<?!>) (Suppress "Failed to check if file exists")
 
   liftIO $ TIO.writeFile path content
   liftIO $ markAsTaken conn rn

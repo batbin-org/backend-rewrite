@@ -1,17 +1,17 @@
 module Wrappers where
 
-import Cli (Cli)
-import Control.Monad.IO.Class (MonadIO (liftIO))
-import Data.Aeson.Text (encodeToLazyText)
-import Data.Text (Text)
-import Data.Text.Lazy (toStrict)
+import           Cli (Cli)
+import           Control.Monad.IO.Class (MonadIO (liftIO))
+import           Data.Aeson.Text (encodeToLazyText)
+import           Data.Text (Text)
+import           Data.Text.Lazy (toStrict)
 import qualified Database.Redis as R (Connection)
-import Database.SQLite.Simple (Connection)
-import Network.Socket (SockAddr)
-import Servant (Handler)
-import Trans (HandlerT (HandlerT, runHandlerT))
-import Types (Status (Status, message))
-import Utils (skToStr)
+import           Database.SQLite.Simple (Connection)
+import           Network.Socket (SockAddr)
+import           Servant (Handler)
+import           Trans (HandlerT (HandlerT, runHandlerT))
+import           Types (Status (Status, message))
+import           Utils (skToStr)
 
 rootRouteWrapper :: HandlerT Status -> Handler Status
 rootRouteWrapper (HandlerT val) = do

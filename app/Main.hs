@@ -1,17 +1,18 @@
 module Main where
 
-import Cli (Cli (Cli, dbPath, pastesDir, port, repopulateDb), opts)
-import Control.Exception (SomeException)
-import Data.Aeson (encode)
-import Data.Proxy (Proxy (..))
-import Data.Text as T (Text, unpack)
+import           Cli (Cli (Cli, dbPath, pastesDir, port, repopulateDb), opts)
+import           Control.Exception (SomeException)
+import           Control.Monad (when, unless)
+import           Data.Aeson (encode)
+import           Data.Proxy (Proxy (..))
+import           Data.Text as T (Text, unpack)
 import qualified Data.Text.IO as TIO (putStrLn)
-import Database (getRandomName, migrate, populateFromFile, repopulateFromFs)
-import Database.Redis (checkedConnect, defaultConnectInfo)
-import Database.SQLite.Simple (open)
-import Network.HTTP.Types.Status (status500)
-import Network.Wai (Request, Response, responseLBS)
-import Network.Wai.Handler.Warp
+import           Database (getRandomName, migrate, populateFromFile, repopulateFromFs)
+import           Database.Redis (checkedConnect, defaultConnectInfo)
+import           Database.SQLite.Simple (open)
+import           Network.HTTP.Types.Status (status500)
+import           Network.Wai (Request, Response, responseLBS)
+import           Network.Wai.Handler.Warp
   ( Settings,
     defaultSettings,
     runSettings,
@@ -19,19 +20,19 @@ import Network.Wai.Handler.Warp
     setOnExceptionResponse,
     setPort,
   )
-import Options.Applicative
+import           Options.Applicative
   ( execParser,
     fullDesc,
     header,
     info,
     progDesc,
   )
-import Routes (create, fetch, root)
-import Servant (Proxy (..), serve, type (:<|>) ((:<|>)))
-import System.Directory (createDirectoryIfMissing, doesDirectoryExist, doesFileExist)
-import TextShow (TextShow (showt))
-import Types (BatbinAPI, Status (Status))
-import Wrappers (cRouteWrapper, fRouteWrapper, rootRouteWrapper)
+import           Routes (create, fetch, root))
+import           Servant (Proxy (..), serve, type (:<|>) ((:<|>))
+import           System.Directory (createDirectoryIfMissing, doesDirectoryExist, doesFileExist)
+import           TextShow (TextShow (showt))
+import           Types (BatbinAPI, Status (Status))
+import           Wrappers (cRouteWrapper, fRouteWrapper, rootRouteWrapper)
 
 -- wai-wide exception handler
 erSettings :: Int -> Settings
@@ -67,13 +68,12 @@ batbinServer cli = do
   putStrLn "running migration..."
   migrate conn
 
-  if not didExist
-    then do
-      populateFromFile conn "words_alpha.txt"
-      putStrLn "\rPopulation complete!"
-    else pure ()
+  unless didExist $ do
+    populateFromFile conn "words_alpha.txt"
+    putStrLn "\rPopulation complete!"
 
-  if repopulateDb cli then repopulateFromFs conn (pastesDir cli) else pure ()
+  when (repopulateDb cli) $ do
+    repopulateFromFs conn (pastesDir cli)
 
   let app =
         serve

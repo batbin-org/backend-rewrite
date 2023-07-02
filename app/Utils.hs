@@ -32,7 +32,7 @@ instance Show a => Stringable a where
   stringify = show
 
 -- Error handling helpers
-data ErrorTransform = Suppress | Reflect | Replace Text
+data ErrorTransform = Suppress String | Reflect | Replace Text
 
 -- usage example of <?>
 -- demo :: HandlerT Status
@@ -51,7 +51,9 @@ class Monad m => Failable m where
 instance Failable Maybe where
   x <?> t = case x of
     Nothing -> case t of
-      Suppress -> fail "Something went wrong!"
+      Suppress log -> do
+        liftIO $ print log
+        fail "Something went wrong!"
       Replace err -> fail (unpack err)
       -- we've got nothing to reflect
       -- so we might as well suppress
@@ -63,7 +65,9 @@ instance Stringable l => Failable (Either l) where
     Left err -> do
       liftIO $ putStrLn ("ERR> " <> stringify err)
       case t of
-        Suppress -> fail "Something went wrong!"
+        Suppress log -> do
+          liftIO $ print log
+          fail "Something went wrong!"
         Replace err' -> fail (unpack err')
         Reflect -> fail (stringify err)
     Right v -> pure v
@@ -73,7 +77,9 @@ instance Stringable l => Failable (Either l) where
   if v
     then pure v
     else case t of
-      Suppress -> fail "Something went wrong!"
+      Suppress log -> do
+        liftIO $ print log
+        fail "Something went wrong!"
       Reflect -> fail "A bool was false!"
       Replace t -> fail (unpack t)
 

@@ -2,10 +2,10 @@ module Database where
 
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
-import Database.SQLite.Simple (Connection (Connection), Only (Only), ToRow (toRow), execute, execute_, query, query_)
-import Database.SQLite.Simple.FromRow (FromRow (fromRow), field)
-import System.Directory (doesDirectoryExist, doesFileExist, listDirectory)
-import Text.PortableLines as TPL (lines)
+import           Database.SQLite.Simple (Connection (Connection), Only (Only), ToRow (toRow), execute, execute_, query, query_)
+import           Database.SQLite.Simple.FromRow (FromRow (fromRow), field)
+import           System.Directory (doesDirectoryExist, doesFileExist, listDirectory)
+import           Text.PortableLines as TPL (lines)
 
 data Identifier = Identifier {id :: Int, name :: T.Text, taken :: Bool}
 
