@@ -30,7 +30,7 @@ executable backend-rewrite
                         , network
                         , servant
                         , hedis
-                        , aeson
+                        , aeson ==2.1.2.1
                         , Cabal
                         , text
                         , warp
