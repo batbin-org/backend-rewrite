@@ -27,8 +27,8 @@ import           Options.Applicative
     info,
     progDesc,
   )
-import           Routes (create, fetch, root))
-import           Servant (Proxy (..), serve, type (:<|>) ((:<|>))
+import           Routes (create, fetch, root)
+import           Servant (Proxy (..), serve, type (:<|>) ((:<|>)))
 import           System.Directory (createDirectoryIfMissing, doesDirectoryExist, doesFileExist)
 import           TextShow (TextShow (showt))
 import           Types (BatbinAPI, Status (Status))
