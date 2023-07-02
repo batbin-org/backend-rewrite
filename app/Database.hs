@@ -1,11 +1,13 @@
 module Database where
 
+import           Control.Monad.IO.Class (MonadIO (liftIO))
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import           Database.SQLite.Simple (Connection (Connection), Only (Only), ToRow (toRow), execute, execute_, query, query_)
 import           Database.SQLite.Simple.FromRow (FromRow (fromRow), field)
 import           System.Directory (doesDirectoryExist, doesFileExist, listDirectory)
 import           Text.PortableLines as TPL (lines)
+import           Utils (getAvailableUuid)
 
 data Identifier = Identifier {id :: Int, name :: T.Text, taken :: Bool}
 
@@ -43,8 +45,8 @@ populateFromFile c f = do
 markAsTaken :: Connection -> T.Text -> IO ()
 markAsTaken c n = execute c "UPDATE identifier SET taken = 1 WHERE name = ?" (Only n)
 
-getRandomName :: Connection -> IO T.Text
-getRandomName c = do
+getRandomName :: Connection -> String -> IO T.Text
+getRandomName c pdir = do
   randomName <-
     query_
       c
@@ -52,7 +54,10 @@ getRandomName c = do
       \WHERE id \
       \IN (SELECT id FROM identifier WHERE taken = 0 ORDER BY RANDOM() LIMIT 1)" ::
       IO [Identifier]
-  pure $ name $ head randomName
+  if null randomName then do
+    str <- liftIO $ getAvailableUuid pdir
+    pure . T.pack $ str
+  else pure $ name $ head randomName
 
 repopulateFromFs :: Connection -> String -> IO ()
 repopulateFromFs c pd = do

@@ -32,6 +32,7 @@ executable backend-rewrite
                         , hedis
                         , aeson ==2.1.2.1
                         , Cabal
+                        , uuid
                         , text
                         , warp
                         , wai

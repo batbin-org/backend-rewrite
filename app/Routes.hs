@@ -67,8 +67,9 @@ create conn rconn cli content ip = do
             fail $ "Limit exceeded! Next paste can be stored in " <> show ttl <> "seconds"
             pure ()
 
-  rn <- liftIO $ getRandomName conn
-  let path = pastesDir cli <> "/" <> unpack rn
+  let pdir = pastesDir cli
+  rn <- liftIO $ getRandomName conn pdir
+  let path = pdir <> "/" <> unpack rn
   liftIO (not <$> doesFileExist path) >>= (<?!>) (Suppress "Failed to check if file exists")
 
   liftIO $ TIO.writeFile path content

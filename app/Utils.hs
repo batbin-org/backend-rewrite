@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 module Utils where
@@ -10,10 +9,12 @@ import Data.IP
     fromHostAddress,
     fromHostAddress6,
   )
-import Data.Text (Text, unpack)
+import Data.Text as T (Text, pack, unpack, replace)
 import Network.Socket (SockAddr (..))
 import Trans (HandlerT (HandlerT))
 import Types (Status (Status))
+import System.Directory (doesFileExist)
+import Data.UUID.V4 (nextRandom)
 
 -- Stringable
 class Stringable a where
@@ -95,3 +96,9 @@ skToStr sockAddr = case sockAddr of
   SockAddrInet _ h4 -> show $ IPv4 $ fromHostAddress h4
   SockAddrInet6 _ _ h6 _ -> show $ IPv6 $ fromHostAddress6 h6
   SockAddrUnix _ -> error "UNIX address found on the web!"
+
+getAvailableUuid :: String -> IO String
+getAvailableUuid pdir = do
+    uuid <- nextRandom
+    doesExist <- doesFileExist (pdir ++ "/" ++ show uuid)
+    if doesExist then getAvailableUuid pdir else return $ T.unpack $ T.replace "-" "" $ T.pack $ show uuid
